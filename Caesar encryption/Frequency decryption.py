@@ -9,24 +9,20 @@ UPPER_Z_INDEX = ord('Z')
 
 
 def get_frequency(text):
-    frequency_list = []
-    for i in range(0, 26):
-        frequency_list.append(0.0)
-    text = text.lower()
+    dic = {}
     text_length = 0
-    for letter in text:
-        if ord(letter) < 97 or ord(letter) > 122:
-            continue
-        frequency_list[ord(letter) - 97] += 1
+    for letter in [chr(i) for i in range(LOWER_A_INDEX,LOWER_Z_INDEX+1)]:
+        dic[letter] = 0.0
+    for letter in text.lower():
+        if ord(letter) < 97 or ord(letter) > 122: continue
+        dic[letter] += 1
         text_length += 1
-    for i in range(0, len(frequency_list)):
-        frequency_list[i] /= text_length
-    return frequency_list
+    return [item / text_length for item in dic]
 
 
 def sum_of_squared_differences(list1, list2):
     ssd = 0
-    for i in range(0, len(list1)):
+    for i in range(26):
         diff = list1[i] - list2[i]
         ssd += diff * diff
     return ssd
@@ -34,6 +30,8 @@ def sum_of_squared_differences(list1, list2):
 
 def try_all_shifts(cipher, plain):
     ssd_list = []
+    cipher = cipher.values()
+    plain = plain.values()
     for i in range(0, 25):
         ssd_list.append(sum_of_squared_differences(cipher, plain))
         cipher.append(cipher.pop(0))
@@ -42,24 +40,18 @@ def try_all_shifts(cipher, plain):
 
 def decrypt(cipher_text, key):
     plain_list = []
-    cipher_list = list(cipher_text)
-    for character in cipher_list:
-        if ord(character) >= LOWER_A_INDEX and ord(character) <= LOWER_Z_INDEX:
-            cipher_ord = ord(character)
-            plain_ord = cipher_ord - key
-            if plain_ord < LOWER_A_INDEX:
-                plain_ord += 26
-            plain_list.append(chr(plain_ord))
-        elif ord(character) >= UPPER_A_INDEX and ord(character) <= UPPER_Z_INDEX:
-            cipher_ord = ord(character)
-            plain_ord = cipher_ord - key
+    for character in list(cipher_text):
+        if LOWER_A_INDEX <= ord(character) <= LOWER_Z_INDEX:
+            plain_ord = ord(character) - key
+            if plain_ord < LOWER_A_INDEX: plain_ord += 26
+        elif  UPPER_A_INDEX <= ord(character) <= UPPER_Z_INDEX:
+            plain_ord = ord(character) - key
             if plain_ord < UPPER_A_INDEX:
                 plain_ord += 26
-            plain_list.append(chr(plain_ord))
         else:
-            plain_list.append(character)
-    plain_text = ''.join(plain_list)
-    return plain_text
+            plain_ord = ord(character)
+        plain_list.append(chr(plain_ord))
+    return ''.join(plain_list)
 
 
 def main():
